@@ -1,8 +1,8 @@
 import { Platform } from 'react-native';
 
 // Set to true to use the Vercel production URL
-const USE_PRODUCTION = false;
-const PRODUCTION_URL = 'https://server-mu-pied.vercel.app';
+const USE_PRODUCTION = true;
+const PRODUCTION_URL = 'https://grocerati-backend.vercel.app';
 
 const getDevHost = () => {
   if (Platform.OS === 'ios') return 'localhost';
