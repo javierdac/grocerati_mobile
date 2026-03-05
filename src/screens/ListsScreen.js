@@ -6,9 +6,7 @@ import {
   Alert,
   Text,
   TouchableOpacity,
-  Modal,
   TextInput,
-  KeyboardAvoidingView,
   Platform,
   Share,
 } from 'react-native';
@@ -18,6 +16,8 @@ import api from '../services/api';
 import { ListsSkeleton } from '../components/Skeleton';
 import AnimatedListItem from '../components/AnimatedListItem';
 import FadeInScreen from '../components/FadeInScreen';
+import ModalWrapper from '../components/ModalWrapper';
+import QRScanner from '../components/QRScanner';
 
 const LIST_ICONS = [
   'cart-outline', 'home-outline', 'business-outline', 'storefront-outline',
@@ -36,6 +36,7 @@ export default function ListsScreen({ navigation }) {
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('cart-outline');
   const [joinCode, setJoinCode] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
   const [userName, setUserName] = useState('');
 
   const fetchLists = useCallback(async () => {
@@ -114,11 +115,14 @@ export default function ListsScreen({ navigation }) {
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity onPress={() => setShowJoin(true)} style={styles.headerJoinBtn}>
-          <Ionicons name="qr-code-outline" size={16} color="#fff" />
-          <Text style={styles.headerJoinText}>Unirse</Text>
-        </TouchableOpacity>
+      header: () => (
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Mis Listas</Text>
+          <TouchableOpacity onPress={() => setShowJoin(true)} style={styles.headerJoinBtn}>
+            <Ionicons name="qr-code-outline" size={16} color="#fff" />
+            <Text style={styles.headerJoinText}>Unirse</Text>
+          </TouchableOpacity>
+        </View>
       ),
     });
   }, [navigation]);
@@ -197,11 +201,7 @@ export default function ListsScreen({ navigation }) {
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
 
-      <Modal visible={showCreate} transparent animationType="fade">
-        <KeyboardAvoidingView
-          style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.modalContent}>
+      <ModalWrapper visible={showCreate} onClose={() => { setShowCreate(false); setNewName(''); setNewIcon('cart-outline'); }}>
             <Text style={styles.modalTitle}>Nueva Lista</Text>
             <TextInput
               style={styles.modalInput}
@@ -244,16 +244,21 @@ export default function ListsScreen({ navigation }) {
                 <Text style={styles.saveBtnText}>Crear</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      </ModalWrapper>
 
-      <Modal visible={showJoin} transparent animationType="fade">
-        <KeyboardAvoidingView
-          style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.modalContent}>
+      <ModalWrapper visible={showJoin && !showScanner} onClose={() => { setShowJoin(false); setJoinCode(''); }}>
             <Text style={styles.modalTitle}>Unirse a Lista</Text>
+            <TouchableOpacity style={styles.scanBtn} onPress={() => setShowScanner(true)}>
+              <View style={styles.scanIconCircle}>
+                <Ionicons name="qr-code-outline" size={28} color="#4CAF50" />
+              </View>
+              <Text style={styles.scanBtnText}>Escanear codigo QR</Text>
+            </TouchableOpacity>
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>o ingresa el codigo</Text>
+              <View style={styles.dividerLine} />
+            </View>
             <TextInput
               style={styles.modalInput}
               value={joinCode}
@@ -261,7 +266,6 @@ export default function ListsScreen({ navigation }) {
               placeholder="Codigo de invitacion"
               placeholderTextColor="#999"
               autoCapitalize="characters"
-              autoFocus
               returnKeyType="done"
               onSubmitEditing={joinList}
             />
@@ -280,9 +284,25 @@ export default function ListsScreen({ navigation }) {
                 <Text style={styles.saveBtnText}>Unirse</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      </ModalWrapper>
+
+      <ModalWrapper visible={showScanner} onClose={() => setShowScanner(false)}>
+            <Text style={styles.modalTitle}>Escanear QR</Text>
+            <View style={styles.cameraContainer}>
+              {showScanner && (
+                <QRScanner onRead={(code) => {
+                  setShowScanner(false);
+                  setJoinCode(code);
+                  setShowJoin(true);
+                }} />
+              )}
+            </View>
+            <TouchableOpacity
+              style={[styles.modalBtn, styles.cancelModalBtn, { marginTop: 12 }]}
+              onPress={() => setShowScanner(false)}>
+              <Text style={styles.cancelBtnText}>Cancelar</Text>
+            </TouchableOpacity>
+      </ModalWrapper>
     </View>
     </FadeInScreen>
   );
@@ -290,6 +310,20 @@ export default function ListsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#4CAF50',
+    paddingTop: Platform.OS === 'ios' ? 54 : 10,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+  },
   greeting: {
     fontSize: 22,
     fontWeight: '800',
@@ -351,13 +385,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 24 },
   modalTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginBottom: 16 },
   modalInput: {
     borderWidth: 1,
@@ -373,9 +400,52 @@ const styles = StyleSheet.create({
   modalBtn: { flex: 1, padding: 14, borderRadius: 12, alignItems: 'center' },
   cancelModalBtn: { backgroundColor: '#f5f5f5' },
   saveModalBtn: { backgroundColor: '#4CAF50' },
-  joinModalBtn: { backgroundColor: '#2196F3' },
+  joinModalBtn: { backgroundColor: '#4CAF50' },
   cancelBtnText: { fontSize: 16, fontWeight: '600', color: '#666' },
   saveBtnText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  scanBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 10,
+  },
+  scanIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanBtnText: {
+    color: '#4CAF50',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#eee',
+  },
+  dividerText: {
+    color: '#999',
+    fontSize: 13,
+    marginHorizontal: 12,
+  },
+  cameraContainer: {
+    height: 250,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  camera: {
+    flex: 1,
+  },
   headerJoinBtn: {
     flexDirection: 'row',
     alignItems: 'center',

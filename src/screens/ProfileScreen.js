@@ -7,15 +7,13 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
-  Modal,
   TextInput,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from '../services/api';
 import FadeInScreen from '../components/FadeInScreen';
+import ModalWrapper from '../components/ModalWrapper';
 import { ProfileSkeleton } from '../components/Skeleton';
 
 export default function ProfileScreen({ navigation }) {
@@ -167,11 +165,7 @@ export default function ProfileScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <Modal visible={showEdit} transparent animationType="fade">
-        <KeyboardAvoidingView
-          style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.modalContent}>
+      <ModalWrapper visible={showEdit} onClose={() => setShowEdit(false)}>
             <Text style={styles.modalTitle}>Editar perfil</Text>
             <TextInput
               style={styles.modalInput}
@@ -215,9 +209,7 @@ export default function ProfileScreen({ navigation }) {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      </ModalWrapper>
     </ScrollView>
     </FadeInScreen>
   );
@@ -303,13 +295,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoutBtnText: { color: '#e53935', fontSize: 16, fontWeight: '600' },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 24 },
   modalTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginBottom: 16 },
   modalInput: {
     borderWidth: 1,

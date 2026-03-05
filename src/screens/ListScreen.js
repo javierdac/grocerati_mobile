@@ -6,9 +6,7 @@ import {
   Alert,
   Text,
   TouchableOpacity,
-  Modal,
   TextInput,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   AppState,
@@ -21,6 +19,9 @@ import AddItemInput from '../components/AddItemInput';
 import { ItemsSkeleton } from '../components/Skeleton';
 import AnimatedListItem from '../components/AnimatedListItem';
 import FadeInScreen from '../components/FadeInScreen';
+import { showToast } from '../utils/toast';
+import ModalWrapper from '../components/ModalWrapper';
+import QRCodeView from '../components/QRCodeView';
 
 const LIST_ICONS = [
   'cart-outline', 'home-outline', 'business-outline', 'storefront-outline',
@@ -44,6 +45,8 @@ export default function ListScreen({ route, navigation }) {
   const [listEditName, setListEditName] = useState('');
   const [listEditIcon, setListEditIcon] = useState('cart-outline');
   const [listMembers, setListMembers] = useState([]);
+  const [showShare, setShowShare] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
 
   const fetchItems = useCallback(async () => {
     try {
@@ -106,6 +109,9 @@ export default function ListScreen({ route, navigation }) {
     setItems((prev) =>
       prev.map((i) => (i._id === item._id ? { ...i, completed: newCompleted } : i)),
     );
+    if (newCompleted) {
+      showToast(`"${item.name}" completado`);
+    }
     try {
       await api.patch(`/lists/${listId}/items/${item._id}`, { completed: newCompleted });
     } catch {
@@ -151,9 +157,11 @@ export default function ListScreen({ route, navigation }) {
         text: 'Limpiar',
         style: 'destructive',
         onPress: async () => {
+          const count = completedCount;
           setItems((prev) => prev.filter((i) => !i.completed));
           await api.post(`/lists/${listId}/items/clear-completed`);
           await fetchItems();
+          showToast(`${count} producto${count !== 1 ? 's' : ''} eliminado${count !== 1 ? 's' : ''}`);
         },
       },
     ]);
@@ -162,20 +170,27 @@ export default function ListScreen({ route, navigation }) {
   const shareList = useCallback(async () => {
     try {
       const { data } = await api.get(`/lists/${listId}`);
-      const code = data.invite_code;
-      await Share.share({
-        message: `Unite a mi lista "${data.name}" en Grocerati!\nCodigo de invitacion: ${code}`,
-      });
+      setInviteCode(data.invite_code);
+      setShowShare(true);
     } catch {
-      Alert.alert('Error', 'No se pudo compartir');
+      Alert.alert('Error', 'No se pudo obtener el codigo');
     }
   }, [listId]);
 
-  const openListEdit = useCallback(async () => {
-    await fetchListInfo();
+  const shareViaSystem = async () => {
+    try {
+      await Share.share({
+        message: `Unite a mi lista "${listName}" en Grocerati!\nCodigo de invitacion: ${inviteCode}`,
+        title: 'Grocerati',
+      });
+    } catch {}
+  };
+
+  const openListEdit = useCallback(() => {
     setListEditName(listName);
     setListEditIcon(listIcon);
     setShowListEdit(true);
+    fetchListInfo();
   }, [fetchListInfo, listName, listIcon]);
 
   const saveListEdit = async () => {
@@ -210,18 +225,23 @@ export default function ListScreen({ route, navigation }) {
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      title: listName,
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', gap: 16 }}>
-          <TouchableOpacity onPress={shareList} hitSlop={8}>
-            <Ionicons name="share-outline" size={22} color="#fff" />
+      header: () => (
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={clearCompleted} hitSlop={8}>
-            <Ionicons name="trash-outline" size={22} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={openListEdit} hitSlop={8}>
-            <Ionicons name="settings-outline" size={22} color="#fff" />
-          </TouchableOpacity>
+          <Text style={styles.headerTitle} numberOfLines={1}>{listName}</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity onPress={shareList} style={styles.headerBtn}>
+              <Ionicons name="share-outline" size={22} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={clearCompleted} style={styles.headerBtn}>
+              <Ionicons name="trash-outline" size={22} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={openListEdit} style={styles.headerBtn}>
+              <Ionicons name="settings-outline" size={22} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
       ),
     });
@@ -260,12 +280,24 @@ export default function ListScreen({ route, navigation }) {
         />
       )}
 
+      {/* Share QR Modal */}
+      <ModalWrapper visible={showShare} onClose={() => setShowShare(false)}>
+        <View style={{ alignItems: 'center' }}>
+          <Text style={styles.modalTitle}>Compartir lista</Text>
+          <View style={styles.qrContainer}>
+            {inviteCode ? <QRCodeView value={inviteCode} size={180} /> : null}
+          </View>
+          <Text style={styles.inviteCode}>{inviteCode}</Text>
+          <Text style={styles.inviteHint}>Escaneá este QR o compartí el código</Text>
+          <TouchableOpacity style={styles.shareSystemBtn} onPress={shareViaSystem}>
+            <Ionicons name="share-social-outline" size={18} color="#fff" />
+            <Text style={styles.shareSystemBtnText}>Compartir</Text>
+          </TouchableOpacity>
+        </View>
+      </ModalWrapper>
+
       {/* Edit Item Modal */}
-      <Modal visible={!!editItem} transparent animationType="fade">
-        <KeyboardAvoidingView
-          style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.modalContent}>
+      <ModalWrapper visible={!!editItem} onClose={() => setEditItem(null)}>
             <Text style={styles.modalTitle}>Editar producto</Text>
             <TextInput
               style={styles.modalInput}
@@ -295,16 +327,10 @@ export default function ListScreen({ route, navigation }) {
                 <Text style={styles.saveBtnText}>Guardar</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      </ModalWrapper>
 
       {/* Edit List Modal */}
-      <Modal visible={showListEdit} transparent animationType="fade">
-        <KeyboardAvoidingView
-          style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.modalContent}>
+      <ModalWrapper visible={showListEdit} onClose={() => setShowListEdit(false)}>
             <Text style={styles.modalTitle}>Editar lista</Text>
             <TextInput
               style={styles.modalInput}
@@ -365,9 +391,7 @@ export default function ListScreen({ route, navigation }) {
                 <Text style={styles.saveBtnText}>Guardar</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      </ModalWrapper>
     </View>
     </FadeInScreen>
   );
@@ -375,15 +399,64 @@ export default function ListScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4CAF50',
+    paddingTop: Platform.OS === 'ios' ? 54 : 10,
+    paddingBottom: 12,
+    paddingHorizontal: 8,
+  },
+  headerBackBtn: {
+    padding: 8,
+  },
+  headerTitle: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    marginHorizontal: 4,
+  },
+  headerActions: {
+    flexDirection: 'row',
+  },
+  headerBtn: {
+    padding: 10,
+  },
+  qrContainer: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  inviteCode: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#333',
+    letterSpacing: 3,
+    marginBottom: 6,
+  },
+  inviteHint: {
+    fontSize: 13,
+    color: '#999',
+    marginBottom: 20,
+  },
+  shareSystemBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+  },
+  shareSystemBtnText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
+  },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#999', fontSize: 16, marginTop: 8 },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 24 },
   modalTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginBottom: 16 },
   modalInput: {
     borderWidth: 1,

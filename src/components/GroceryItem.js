@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Alert } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, Alert } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 export default function GroceryItem({ item, onToggle, onDelete, onEdit }) {
@@ -50,21 +51,19 @@ export default function GroceryItem({ item, onToggle, onDelete, onEdit }) {
 
   return (
     <Swipeable ref={swipeRef} renderRightActions={renderRightActions} overshootRight={false} friction={2} rightThreshold={40}>
-      <View style={[styles.container, item.completed && styles.completedContainer]}>
-        <TouchableOpacity style={styles.main} onPress={onToggle} activeOpacity={0.6}>
-          <View style={[styles.checkbox, item.completed && styles.checked]}>
-            {item.completed && <Text style={styles.checkmark}>✓</Text>}
-          </View>
-          <View style={styles.info}>
-            <Text style={[styles.name, item.completed && styles.completedText]}>
-              {item.name}
-            </Text>
-            <Text style={styles.meta}>
-              x{item.quantity} · {item.added_by?.name || 'Desconocido'}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
+      <Pressable style={[styles.container, item.completed && styles.completedContainer]} onPress={onToggle}>
+        <View style={[styles.checkbox, item.completed && styles.checked]}>
+          {item.completed && <Text style={styles.checkmark}>✓</Text>}
+        </View>
+        <View style={styles.info}>
+          <Text style={[styles.name, item.completed && styles.completedText]}>
+            {item.name}
+          </Text>
+          <Text style={styles.meta}>
+            x{item.quantity} · {item.added_by?.name || 'Desconocido'}
+          </Text>
+        </View>
+      </Pressable>
     </Swipeable>
   );
 }
@@ -85,7 +84,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
   },
   completedContainer: { opacity: 0.5 },
-  main: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   checkbox: {
     width: 28,
     height: 28,
