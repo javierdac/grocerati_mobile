@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
+import FadeInScreen from '../components/FadeInScreen';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -34,6 +35,7 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
+    <FadeInScreen>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -77,6 +79,7 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.link}>No tienes cuenta? Registrate</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
+    </FadeInScreen>
   );
 }
 

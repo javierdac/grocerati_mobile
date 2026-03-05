@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
+import FadeInScreen from '../components/FadeInScreen';
 
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -36,6 +37,7 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
+    <FadeInScreen>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -89,6 +91,7 @@ export default function RegisterScreen({ navigation }) {
         <Text style={styles.link}>Ya tienes cuenta? Inicia sesion</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
+    </FadeInScreen>
   );
 }
 

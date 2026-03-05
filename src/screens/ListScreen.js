@@ -11,21 +11,23 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  AppState,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from '../services/api';
-import socket from '../services/socket';
 import GroceryItem from '../components/GroceryItem';
 import AddItemInput from '../components/AddItemInput';
 import { ItemsSkeleton } from '../components/Skeleton';
 import AnimatedListItem from '../components/AnimatedListItem';
+import FadeInScreen from '../components/FadeInScreen';
 
 const LIST_ICONS = [
   'cart-outline', 'home-outline', 'business-outline', 'storefront-outline',
   'restaurant-outline', 'cafe-outline', 'wine-outline', 'pizza-outline',
   'fitness-outline', 'medical-outline', 'paw-outline', 'gift-outline',
   'heart-outline', 'star-outline', 'construct-outline', 'color-palette-outline',
+  'leaf-outline', 'airplane-outline',
 ];
 
 export default function ListScreen({ route, navigation }) {
@@ -46,7 +48,10 @@ export default function ListScreen({ route, navigation }) {
   const fetchItems = useCallback(async () => {
     try {
       const { data } = await api.get(`/lists/${listId}/items`);
-      setItems(data);
+      const sorted = [...data].sort((a, b) =>
+        a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }),
+      );
+      setItems(sorted);
     } catch (err) {
       if (err.response?.status === 404) {
         navigation.goBack();
@@ -69,14 +74,15 @@ export default function ListScreen({ route, navigation }) {
     fetchItems();
     fetchListInfo();
 
-    socket.emit('join-list', listId);
-    socket.on('items-updated', (updatedListId) => {
-      if (updatedListId === listId) fetchItems();
+    // Poll for updates every 5 seconds while screen is active
+    const interval = setInterval(fetchItems, 5000);
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') fetchItems();
     });
 
     return () => {
-      socket.emit('leave-list', listId);
-      socket.off('items-updated');
+      clearInterval(interval);
+      subscription.remove();
     };
   }, [fetchItems, fetchListInfo, listId]);
 
@@ -229,6 +235,7 @@ export default function ListScreen({ route, navigation }) {
   }, [navigation, listName, shareList, clearCompleted, openListEdit]);
 
   return (
+    <FadeInScreen>
     <View style={styles.container}>
       <AddItemInput onAdd={addItem} />
 
@@ -369,6 +376,7 @@ export default function ListScreen({ route, navigation }) {
         </KeyboardAvoidingView>
       </Modal>
     </View>
+    </FadeInScreen>
   );
 }
 

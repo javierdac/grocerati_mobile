@@ -15,6 +15,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from '../services/api';
+import FadeInScreen from '../components/FadeInScreen';
 
 export default function ProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
@@ -121,6 +122,7 @@ export default function ProfileScreen({ navigation }) {
   }
 
   return (
+    <FadeInScreen>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
@@ -220,6 +222,7 @@ export default function ProfileScreen({ navigation }) {
         </KeyboardAvoidingView>
       </Modal>
     </ScrollView>
+    </FadeInScreen>
   );
 }
 

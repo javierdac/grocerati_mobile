@@ -17,12 +17,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from '../services/api';
 import { ListsSkeleton } from '../components/Skeleton';
 import AnimatedListItem from '../components/AnimatedListItem';
+import FadeInScreen from '../components/FadeInScreen';
 
 const LIST_ICONS = [
   'cart-outline', 'home-outline', 'business-outline', 'storefront-outline',
   'restaurant-outline', 'cafe-outline', 'wine-outline', 'pizza-outline',
   'fitness-outline', 'medical-outline', 'paw-outline', 'gift-outline',
   'heart-outline', 'star-outline', 'construct-outline', 'color-palette-outline',
+  'leaf-outline', 'airplane-outline',
 ];
 
 export default function ListsScreen({ navigation }) {
@@ -169,6 +171,7 @@ export default function ListsScreen({ navigation }) {
   );
 
   return (
+    <FadeInScreen>
     <View style={styles.container}>
       {userName ? <Text style={styles.greeting}>Hola, {userName}!</Text> : null}
 
@@ -287,6 +290,7 @@ export default function ListsScreen({ navigation }) {
         </KeyboardAvoidingView>
       </Modal>
     </View>
+    </FadeInScreen>
   );
 }
 

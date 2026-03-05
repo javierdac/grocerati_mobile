@@ -1,5 +1,16 @@
 import { Platform } from 'react-native';
 
-const DEV_HOST = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+// Set to true to use the Vercel production URL
+const USE_PRODUCTION = false;
+const PRODUCTION_URL = 'https://server-mu-pied.vercel.app';
 
-export const API_URL = `http://${DEV_HOST}:3001`;
+const getDevHost = () => {
+  if (Platform.OS === 'ios') return 'localhost';
+  // For real Android devices use your Mac's local IP.
+  // 10.0.2.2 only works on the Android emulator.
+  return '192.168.1.8';
+};
+
+export const API_URL = USE_PRODUCTION
+  ? PRODUCTION_URL
+  : `http://${getDevHost()}:3001`;

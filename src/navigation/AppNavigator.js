@@ -16,6 +16,8 @@ const headerOptions = {
   headerStyle: { backgroundColor: '#4CAF50' },
   headerTintColor: '#fff',
   headerTitleStyle: { fontWeight: '700' },
+  animation: 'fade_from_bottom',
+  animationDuration: 250,
 };
 
 function ListsStack() {
@@ -82,7 +84,7 @@ export default function AppNavigator() {
   if (!initialRoute) return null;
 
   return (
-    <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+    <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false, animation: 'fade', animationDuration: 300 }}>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="Main" component={MainTabs} />

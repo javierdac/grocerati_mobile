@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Alert } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 export default function GroceryItem({ item, onToggle, onDelete, onEdit }) {
@@ -32,7 +32,14 @@ export default function GroceryItem({ item, onToggle, onDelete, onEdit }) {
             style={[styles.actionBtn, styles.deleteBtn]}
             onPress={() => {
               swipeRef.current?.close();
-              onDelete();
+              Alert.alert(
+                'Eliminar producto',
+                `Eliminar "${item.name}"?`,
+                [
+                  { text: 'Cancelar', style: 'cancel' },
+                  { text: 'Eliminar', style: 'destructive', onPress: onDelete },
+                ],
+              );
             }}>
             <Text style={styles.actionText}>Eliminar</Text>
           </TouchableOpacity>
