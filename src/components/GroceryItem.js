@@ -51,7 +51,7 @@ export default function GroceryItem({ item, onToggle, onDelete, onEdit }) {
 
   return (
     <Swipeable ref={swipeRef} renderRightActions={renderRightActions} overshootRight={false} friction={2} rightThreshold={40}>
-      <Pressable style={[styles.container, item.completed && styles.completedContainer]} onPress={onToggle}>
+      <Pressable style={[styles.container, item.completed && styles.completedContainer]} onPress={onToggle} onLongPress={() => swipeRef.current?.openRight()}>
         <View style={[styles.checkbox, item.completed && styles.checked]}>
           {item.completed && <Text style={styles.checkmark}>✓</Text>}
         </View>
