@@ -1,0 +1,15 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+    </style>
+
+    <!-- Splash screen theme -->
+    <style name="SplashTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">@color/grocerati_green</item>
+        <item name="android:navigationBarColor">@color/grocerati_green</item>
+    </style>
+
+</resources>
