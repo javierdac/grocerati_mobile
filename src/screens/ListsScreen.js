@@ -38,6 +38,7 @@ export default function ListsScreen({ navigation }) {
   const [joinCode, setJoinCode] = useState('');
   const [showScanner, setShowScanner] = useState(false);
   const [userName, setUserName] = useState('');
+  const [userId, setUserId] = useState(null);
 
   const fetchLists = useCallback(async () => {
     try {
@@ -59,6 +60,7 @@ export default function ListsScreen({ navigation }) {
       try {
         const { data } = await api.get('/auth/me');
         setUserName(data.name);
+        setUserId(data._id);
       } catch {}
     };
     fetchUser();
@@ -105,6 +107,15 @@ export default function ListsScreen({ navigation }) {
     }
   };
 
+  const leaveList = async (list) => {
+    try {
+      await api.post(`/lists/${list._id}/leave`);
+      setLists((prev) => prev.filter((l) => l._id !== list._id));
+    } catch (err) {
+      Alert.alert('Error', err.response?.data?.error || 'No se pudo salir');
+    }
+  };
+
   const shareList = async (list) => {
     try {
       await Share.share({
@@ -134,17 +145,30 @@ export default function ListsScreen({ navigation }) {
         onPress={() =>
           navigation.navigate('ListDetail', { listId: item._id, listName: item.name, listIcon: item.icon })
         }
-        onLongPress={() =>
-          Alert.alert(
-            'Eliminar lista',
-            `Estas seguro de eliminar "${item.name}" y todos sus productos?`,
-            [
-              { text: 'Cancelar', style: 'cancel' },
-              { text: 'Compartir', onPress: () => shareList(item) },
-              { text: 'Eliminar', style: 'destructive', onPress: () => confirmDeleteList(item) },
-            ],
-          )
-        }
+        onLongPress={() => {
+          const isOwner = item.created_by === userId || item.created_by?._id === userId;
+          if (isOwner) {
+            Alert.alert(
+              item.name,
+              'Que deseas hacer con esta lista?',
+              [
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Compartir', onPress: () => shareList(item) },
+                { text: 'Eliminar', style: 'destructive', onPress: () => confirmDeleteList(item) },
+              ],
+            );
+          } else {
+            Alert.alert(
+              item.name,
+              'Que deseas hacer con esta lista?',
+              [
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Compartir', onPress: () => shareList(item) },
+                { text: 'Salir de lista', style: 'destructive', onPress: () => leaveList(item) },
+              ],
+            );
+          }
+        }}
         activeOpacity={0.7}>
         <View style={styles.cardHeader}>
           <View style={styles.cardIcon}>
@@ -290,10 +314,14 @@ export default function ListsScreen({ navigation }) {
             <Text style={styles.modalTitle}>Escanear QR</Text>
             <View style={styles.cameraContainer}>
               {showScanner && (
-                <QRScanner onRead={(code) => {
+                <QRScanner onRead={async (code) => {
                   setShowScanner(false);
-                  setJoinCode(code);
-                  setShowJoin(true);
+                  try {
+                    const { data } = await api.post('/lists/join', { invite_code: code.trim() });
+                    setLists((prev) => [data, ...prev]);
+                  } catch (err) {
+                    Alert.alert('Error', err.response?.data?.error || 'No se pudo unir');
+                  }
                 }} />
               )}
             </View>
@@ -441,7 +469,6 @@ const styles = StyleSheet.create({
     height: 250,
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 8,
   },
   camera: {
     flex: 1,

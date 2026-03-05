@@ -61,7 +61,7 @@ export default function QRScanner({ onRead }) {
   if (status === 'unavailable') {
     return (
       <View style={styles.fallback}>
-        <Ionicons name="camera-off-outline" size={32} color="#999" />
+        <Ionicons name="camera-outline" size={32} color="#999" />
         <Text style={styles.fallbackText}>Camara no disponible</Text>
       </View>
     );
