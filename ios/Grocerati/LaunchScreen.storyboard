@@ -18,6 +18,12 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" image="SplashImage" translatesAutoresizingMaskIntoConstraints="NO" id="splash-img">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                             </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tu lista de compras, compartida" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="slogan-lbl">
+                                <rect key="frame" x="46.5" y="520" width="300" height="22"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="0.84999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="0.29803921568627451" green="0.68627450980392157" blue="0.31372549019607843" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -25,6 +31,8 @@
                             <constraint firstItem="splash-img" firstAttribute="bottom" secondItem="Ze5-6b-2t3" secondAttribute="bottom" id="bot-c"/>
                             <constraint firstItem="splash-img" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="lead-c"/>
                             <constraint firstItem="splash-img" firstAttribute="trailing" secondItem="Ze5-6b-2t3" secondAttribute="trailing" id="trail-c"/>
+                            <constraint firstItem="slogan-lbl" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="slogan-cx"/>
+                            <constraint firstItem="slogan-lbl" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="100" id="slogan-cy"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                     </view>

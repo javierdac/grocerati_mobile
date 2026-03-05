@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from '../services/api';
 import FadeInScreen from '../components/FadeInScreen';
+import { ProfileSkeleton } from '../components/Skeleton';
 
 export default function ProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
@@ -114,11 +115,7 @@ export default function ProfileScreen({ navigation }) {
   };
 
   if (loading) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-      </View>
-    );
+    return <ProfileSkeleton />;
   }
 
   return (
