@@ -10,8 +10,8 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Share,
 } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from '../services/api';
@@ -104,18 +104,12 @@ export default function ListsScreen({ navigation }) {
     }
   };
 
-  const shareList = (list) => {
-    const code = list.invite_code;
-    Alert.alert('Compartir lista', `Codigo de invitacion:\n\n${code}`, [
-      {
-        text: 'Copiar',
-        onPress: () => {
-          Clipboard.setString(code);
-          Alert.alert('Copiado!', 'Codigo copiado al portapapeles');
-        },
-      },
-      { text: 'Cerrar' },
-    ]);
+  const shareList = async (list) => {
+    try {
+      await Share.share({
+        message: `Unite a mi lista "${list.name}" en Grocerati!\nCodigo de invitacion: ${list.invite_code}`,
+      });
+    } catch {}
   };
 
   React.useLayoutEffect(() => {

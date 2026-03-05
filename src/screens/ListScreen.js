@@ -12,8 +12,8 @@ import {
   Platform,
   ScrollView,
   AppState,
+  Share,
 } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from '../services/api';
 import GroceryItem from '../components/GroceryItem';
@@ -163,18 +163,11 @@ export default function ListScreen({ route, navigation }) {
     try {
       const { data } = await api.get(`/lists/${listId}`);
       const code = data.invite_code;
-      Alert.alert('Compartir lista', `Codigo de invitacion:\n\n${code}`, [
-        {
-          text: 'Copiar',
-          onPress: () => {
-            Clipboard.setString(code);
-            Alert.alert('Copiado!', 'Codigo copiado al portapapeles');
-          },
-        },
-        { text: 'Cerrar' },
-      ]);
+      await Share.share({
+        message: `Unite a mi lista "${data.name}" en Grocerati!\nCodigo de invitacion: ${code}`,
+      });
     } catch {
-      Alert.alert('Error', 'No se pudo obtener el codigo');
+      Alert.alert('Error', 'No se pudo compartir');
     }
   }, [listId]);
 
