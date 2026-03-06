@@ -184,6 +184,24 @@ export default function ListScreen({ route, navigation }) {
     }
   }, [listId]);
 
+  const regenerateCode = async () => {
+    Alert.alert('Cambiar codigo', 'El codigo actual dejara de funcionar. Continuar?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Cambiar',
+        onPress: async () => {
+          try {
+            const { data } = await api.post(`/lists/${listId}/regenerate-code`);
+            setInviteCode(data.invite_code);
+            showToast('Codigo actualizado');
+          } catch (err) {
+            Alert.alert('Error', err.response?.data?.error || 'No se pudo cambiar');
+          }
+        },
+      },
+    ]);
+  };
+
   const shareViaSystem = async () => {
     try {
       await Share.share({
@@ -296,10 +314,16 @@ export default function ListScreen({ route, navigation }) {
           </View>
           <Text style={styles.inviteCode}>{inviteCode}</Text>
           <Text style={styles.inviteHint}>Escaneá este QR o compartí el código</Text>
-          <TouchableOpacity style={styles.shareSystemBtn} onPress={shareViaSystem}>
-            <Ionicons name="share-social-outline" size={18} color="#fff" />
-            <Text style={styles.shareSystemBtnText}>Compartir</Text>
-          </TouchableOpacity>
+          <View style={styles.shareActions}>
+            <TouchableOpacity style={styles.shareSystemBtn} onPress={shareViaSystem}>
+              <Ionicons name="share-social-outline" size={18} color="#fff" />
+              <Text style={styles.shareSystemBtnText}>Compartir</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.regenerateBtn} onPress={regenerateCode}>
+              <Ionicons name="refresh-outline" size={18} color="#666" />
+              <Text style={styles.regenerateBtnText}>Cambiar codigo</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ModalWrapper>
 
@@ -448,12 +472,16 @@ const styles = StyleSheet.create({
     color: '#999',
     marginBottom: 20,
   },
+  shareActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
   shareSystemBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#4CAF50',
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     borderRadius: 12,
     gap: 8,
   },
@@ -461,6 +489,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '700',
+  },
+  regenerateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 6,
+  },
+  regenerateBtnText: {
+    color: '#666',
+    fontSize: 13,
+    fontWeight: '600',
   },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { color: '#999', fontSize: 16, marginTop: 8 },

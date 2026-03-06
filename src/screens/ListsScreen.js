@@ -18,6 +18,7 @@ import AnimatedListItem from '../components/AnimatedListItem';
 import FadeInScreen from '../components/FadeInScreen';
 import ModalWrapper from '../components/ModalWrapper';
 import QRScanner from '../components/QRScanner';
+import { showToast } from '../utils/toast';
 
 const LIST_ICONS = [
   'cart-outline', 'home-outline', 'business-outline', 'storefront-outline',
@@ -317,9 +318,11 @@ export default function ListsScreen({ navigation }) {
                 <QRScanner onRead={async (code) => {
                   setShowScanner(false);
                   setShowJoin(false);
+                  setJoinCode('');
                   try {
                     const { data } = await api.post('/lists/join', { invite_code: code.trim() });
                     setLists((prev) => [data, ...prev]);
+                    showToast('Te uniste a la lista!');
                   } catch (err) {
                     Alert.alert('Error', err.response?.data?.error || 'No se pudo unir');
                   }
