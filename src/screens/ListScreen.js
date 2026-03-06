@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import api from '../services/api';
+import socket from '../services/socket';
 import GroceryItem from '../components/GroceryItem';
 import AddItemInput from '../components/AddItemInput';
 import { ItemsSkeleton } from '../components/Skeleton';
@@ -77,14 +78,20 @@ export default function ListScreen({ route, navigation }) {
     fetchItems();
     fetchListInfo();
 
-    // Poll for updates every 5 seconds while screen is active
-    const interval = setInterval(fetchItems, 5000);
+    socket.emit('join-list', listId);
+
+    const handleItemsUpdated = (updatedListId) => {
+      if (updatedListId === listId) fetchItems();
+    };
+    socket.on('items-updated', handleItemsUpdated);
+
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') fetchItems();
     });
 
     return () => {
-      clearInterval(interval);
+      socket.emit('leave-list', listId);
+      socket.off('items-updated', handleItemsUpdated);
       subscription.remove();
     };
   }, [fetchItems, fetchListInfo, listId]);

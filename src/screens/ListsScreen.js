@@ -316,6 +316,7 @@ export default function ListsScreen({ navigation }) {
               {showScanner && (
                 <QRScanner onRead={async (code) => {
                   setShowScanner(false);
+                  setShowJoin(false);
                   try {
                     const { data } = await api.post('/lists/join', { invite_code: code.trim() });
                     setLists((prev) => [data, ...prev]);
